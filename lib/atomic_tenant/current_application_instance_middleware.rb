@@ -20,8 +20,10 @@ module AtomicTenant
         # TODO: decoded token should be put on request
         # TODO AuthToken should live in a dep
         decoded_token = AuthToken.decode(token, nil, false)
-        if decoded = decoded_token.first && app_instance_id = decoded ['application_instance_id']
-          env['atomic.validated.application_instance_id'] = app_instance_id
+        if decoded_token.present? && decoded_token.first.present?
+          if app_instance_id = decoded_token.first['application_instance_id']
+            env['atomic.validated.application_instance_id'] = app_instance_id
+          end
         end
       end
 

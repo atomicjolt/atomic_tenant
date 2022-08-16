@@ -7,9 +7,11 @@ module AtomicTenant
             "PlatformGuidStrategy"
           end
 
+          # return DeploymentStrategyResult
           def call(id_token:)
             decoded_token = JWT.decode(id_token, nil, false)
 
+            iss = decoded_token.dig(0, "iss")
             platform_guid = decoded_token.dig(0, AtomicLti::Definitions::TOOL_PLATFORM_CLAIM, "guid")
             target_link_uri = decoded_token.dig(0, AtomicLti::Definitions::TARGET_LINK_URI_CLAIM)
 
@@ -26,7 +28,7 @@ module AtomicTenant
 
             return DeploymentStrategyResult.new() if !app.present?
 
-            if(pinned = AtomicTenant::PinnedPlatformGuid.find_by(platform_guid: platform_guid, application_id: app.id))
+            if(pinned = AtomicTenant::PinnedPlatformGuid.find_by(iss: iss, platform_guid: platform_guid, application_id: app.id))
               DeploymentStrategyResult.new(application_instance_id: pinned.application_instance_id)
             else
               DeploymentStrategyResult.new()

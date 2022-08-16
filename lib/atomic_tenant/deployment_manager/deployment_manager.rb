@@ -32,9 +32,16 @@ module AtomicTenant
           iss = decoded_token.dig(0, "iss")
 
 
-          results = @strageties.map do |strategy| 
-            {name: strategy.name, result: strategy.call(id_token: id_token)}
+          results = @strageties.flat_map do |strategy| 
+            begin
+              [{name: strategy.name, result: strategy.call(id_token: id_token)}]
+            rescue StandardError => e
+               Rails.logger.error("Error in lti deployment linking strategy: #{strategy.name}, #{e}")
+              []
+            end
           end
+
+          Rails.logger.debug("Linking Results: #{results}")
 
           matched = results.filter { |r| r[:result].application_instance_id.present? }
 

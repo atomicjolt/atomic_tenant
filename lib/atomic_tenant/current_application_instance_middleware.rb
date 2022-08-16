@@ -9,11 +9,30 @@ module AtomicTenant
 
     def call(env)
       request = Rack::Request.new(env)
+
+      deployment_manager = AtomicTenant::DeploymentManager::DeploymentManager.new([
+        AtomicTenant::DeploymentManager::PlatformGuidStrategy.new
+      ])
+
+
+      iss = env['atomic.validated.lti_advantage.iss']
+      deployment_id = env['atomic.validated.lti_advantage.deployment_id']
+      id_token = env['atomic.validated.id_token']
+
       if env['atomic.validated.oauth_consumer_key'].present?
         oauth_consumer_key = env['atomic.validated.oauth_consumer_key']
         if ai = ApplicationInstance.find_by(lti_key: oauth_consumer_key)
           env['atomic.validated.application_instance_id'] = ai.id
         end
+      elsif env['atomic.validated.id_token'].present?
+
+        if deployment = AtomicTenant::LtiDeployment.find_by(iss: iss, deployment_id: deployment_id)
+          env['atomic.validated.application_instance_id'] = deployment.application_instance_id
+        else
+          deployment = deployment_manager.link_deployment_id(id_token: id_token)
+           env['atomic.validated.application_instance_id'] = deployment.application_instance_id
+        end
+
       elsif encoded_token(request).present?
         token = encoded_token(request)
 

@@ -12,7 +12,8 @@ module AtomicTenant
 
       custom_strategies = AtomicTenant.custom_strategies || []
       default_strategies = [
-        AtomicTenant::DeploymentManager::PlatformGuidStrategy.new
+        AtomicTenant::DeploymentManager::PlatformGuidStrategy.new,
+        AtomicTenant::DeploymentManager::ClientIdStrategy.new
       ]
 
       deployment_manager = AtomicTenant::DeploymentManager::DeploymentManager.new(custom_strategies.concat(default_strategies))

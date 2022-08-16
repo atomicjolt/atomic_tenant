@@ -10,9 +10,12 @@ module AtomicTenant
     def call(env)
       request = Rack::Request.new(env)
 
-      deployment_manager = AtomicTenant::DeploymentManager::DeploymentManager.new([
+      custom_strategies = AtomicTenant.custom_strategies || []
+      default_strategies = [
         AtomicTenant::DeploymentManager::PlatformGuidStrategy.new
-      ])
+      ]
+
+      deployment_manager = AtomicTenant::DeploymentManager::DeploymentManager.new(custom_strategies.concat(default_strategies))
 
 
       iss = env['atomic.validated.lti_advantage.iss']

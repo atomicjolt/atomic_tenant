@@ -8,12 +8,10 @@ module AtomicTenant
           end
 
           # return DeploymentStrategyResult
-          def call(id_token:)
-            decoded_token = JWT.decode(id_token, nil, false)
-
-            iss = decoded_token.dig(0, "iss")
-            platform_guid = decoded_token.dig(0, AtomicLti::Definitions::TOOL_PLATFORM_CLAIM, "guid")
-            target_link_uri = decoded_token.dig(0, AtomicLti::Definitions::TARGET_LINK_URI_CLAIM)
+          def call(decoded_id_token:)
+            iss = decoded_id_token["iss"]
+            platform_guid = decoded_id_token.dig(AtomicLti::Definitions::TOOL_PLATFORM_CLAIM, "guid")
+            target_link_uri = decoded_id_token[AtomicLti::Definitions::TARGET_LINK_URI_CLAIM]
 
 
             return DeploymentStrategyResult.new() if !platform_guid.present? || !target_link_uri.present?

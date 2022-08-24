@@ -14,7 +14,7 @@ module AtomicTenant
 
       class DeploymentManagerStrategy
         def name; end
-        def call(id_token:); end
+        def call(decoded_id_token:); end
       end
 
 
@@ -26,15 +26,13 @@ module AtomicTenant
             @strageties = strageties || []
         end
 
-        def link_deployment_id(id_token:)
-          decoded_token = JWT.decode(id_token, nil, false)
-          deployment_id = decoded_token.dig(0, AtomicLti::Definitions::DEPLOYMENT_ID)
-          iss = decoded_token.dig(0, "iss")
+        def link_deployment_id(decoded_id_token:)
+          deployment_id = decoded_id_token[AtomicLti::Definitions::DEPLOYMENT_ID]
+          iss = decoded_id_token["iss"]
 
-
-          results = @strageties.flat_map do |strategy| 
+          results = @strageties.flat_map do |strategy|
             begin
-              [{name: strategy.name, result: strategy.call(id_token: id_token)}]
+              [{name: strategy.name, result: strategy.call(decoded_id_token: decoded_id_token)}]
             rescue StandardError => e
                Rails.logger.error("Error in lti deployment linking strategy: #{strategy.name}, #{e}")
               []

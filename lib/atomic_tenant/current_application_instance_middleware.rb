@@ -32,7 +32,7 @@ module AtomicTenant
           if deployment = AtomicTenant::LtiDeployment.find_by(iss: iss, deployment_id: deployment_id)
             env['atomic.validated.application_instance_id'] = deployment.application_instance_id
           else
-            deployment = deployment_manager.link_deployment_id(decoded_id_token: decoded_id_token)
+            deployment = deployment_manager.link_deployment_id(decoded_id_token: decoded_token)
              env['atomic.validated.application_instance_id'] = deployment.application_instance_id
           end
 

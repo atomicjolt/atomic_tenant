@@ -49,13 +49,13 @@ module AtomicTenant
                       matched.first[:result]
                     elsif matched.size > 1
                       matched.first[:result]
-                      # TODO report
+                      Rails.logger.info("Colliding strategies, Linking iss / deployment id: #{iss} / #{deployment_id} to application instance: #{to_link.application_instance_id}, all results: #{results}")
 
                     else
                       raise Exceptions::UnableToLinkDeploymentError
                     end
 
-          Rails.logger.debug("Linking iss / deployment id: #{iss} / #{deployment_id} to application instance: #{to_link.application_instance_id}")
+          Rails.logger.info("Linking iss / deployment id: #{iss} / #{deployment_id} to application instance: #{to_link.application_instance_id}")
 
           associate_deployment(iss: iss, deployment_id: deployment_id,application_instance_id: to_link.application_instance_id) 
         end

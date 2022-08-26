@@ -1,10 +1,24 @@
 module AtomicTenant
   module JwtToken
     class InvalidTokenError < StandardError; end
+ 
+    ALGORITHM = "HS512".freeze
 
-    def decoded_jwt_token(req, secret = nil)
-      # TODO: AUthTokenDep
-      token = AuthToken.valid?(encoded_token(req), secret)
+    def self.decode(token,  algorithm = ALGORITHM)
+      JWT.decode(
+        token,
+        AtomicTenant.jwt_secret,
+        true,
+        { algorithm: algorithm },
+      )
+    end
+
+    def self.valid?(token, algorithm = ALGORITHM)
+      decode(token, algorithm)
+    end
+
+    def decoded_jwt_token(req)
+      token = valid?(encoded_token(req))
       raise InvalidTokenError, 'Unable to decode jwt token' if token.blank?
       raise InvalidTokenError, 'Invalid token payload' if token.empty?
 

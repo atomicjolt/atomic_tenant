@@ -38,10 +38,9 @@ module AtomicTenant
 
         elsif encoded_token(request).present?
           token = encoded_token(request)
-
           # TODO: decoded token should be put on request
           # TODO AuthToken should live in a dep
-          decoded_token = AuthToken.decode(token, nil, false)
+          decoded_token = AtomicTenant::JwtToken.decode(token)
           if decoded_token.present? && decoded_token.first.present?
             if app_instance_id = decoded_token.first['application_instance_id']
               env['atomic.validated.application_instance_id'] = app_instance_id

@@ -10,4 +10,5 @@ module AtomicTenant
   # Your code goes here...
   mattr_accessor :custom_strategies
   mattr_accessor :jwt_secret
+  mattr_accessor :jwt_aud
 end

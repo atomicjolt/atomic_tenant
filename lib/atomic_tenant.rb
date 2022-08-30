@@ -7,8 +7,10 @@ require 'atomic_tenant/engine'
 require 'atomic_tenant/current_application_instance_middleware'
 
 module AtomicTenant
-  # Your code goes here...
   mattr_accessor :custom_strategies
+
   mattr_accessor :jwt_secret
   mattr_accessor :jwt_aud
+
+  mattr_accessor :admin_subdomain
 end

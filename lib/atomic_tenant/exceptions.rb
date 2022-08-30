@@ -4,5 +4,8 @@ module AtomicTenant
 
     class UnableToLinkDeploymentError < StandardError
     end
+
+    class NonUniqueAdminApp < StandardError; end
+    class NoAdminApp < StandardError; end
   end
 end

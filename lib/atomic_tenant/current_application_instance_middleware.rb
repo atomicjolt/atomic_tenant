@@ -35,24 +35,43 @@ module AtomicTenant
             deployment = deployment_manager.link_deployment_id(decoded_id_token: decoded_token)
              env['atomic.validated.application_instance_id'] = deployment.application_instance_id
           end
+        elsif is_admin?(request)
+          admin_app_key = AtomicTenant.admin_subdomain
+          admin_app = Application.find_by(key: admin_app_key)
+          app_instances = admin_app.application_instances
 
+          raise Exceptions::NonUniqueAdminApp if app_instances.count > 1
+          raise Exceptions::NoAdminApp if app_instances.empty?
+
+          if instance = app_instances.first
+            env['atomic.validated.application_instance_id'] = instance.id
+          end
         elsif encoded_token(request).present?
           token = encoded_token(request)
           # TODO: decoded token should be put on request
-          # TODO AuthToken should live in a dep
           decoded_token = AtomicTenant::JwtToken.decode(token)
           if decoded_token.present? && decoded_token.first.present?
             if app_instance_id = decoded_token.first['application_instance_id']
               env['atomic.validated.application_instance_id'] = app_instance_id
             end
           end
+
         end
 
       rescue StandardError => e
-        Rails.logger.error("Error in current app instance middleware: #{e}")
+        Rails.logger.error("Error in current app instance middleware: #{e}, #{e.backtrace}")
       end
 
       @app.call(env)
+    end
+
+    def is_admin?(request)
+      host = request.host_with_port
+      subdomain = host&.split(".")&.first
+
+      return false if subdomain.nil?
+
+      subdomain == AtomicTenant.admin_subdomain 
     end
 
     def encoded_token(req)

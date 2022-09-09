@@ -13,4 +13,9 @@ module AtomicTenant
   mattr_accessor :jwt_aud
 
   mattr_accessor :admin_subdomain
+
+
+  def self.get_application_instance(iss:, deployment_id:)
+    AtomicTenant::LtiDeployment.find_by(iss: iss, deployment_id: deployment_id)
+  end
 end

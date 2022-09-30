@@ -5,14 +5,15 @@ module AtomicTenant
     ALGORITHM = "HS512".freeze
 
     def self.decode(token,  algorithm = ALGORITHM)
-      raise InvalidTokenError if AtomicTenant.jwt_aud != token["aud"]
-      
-      JWT.decode(
+      decoded_token = JWT.decode(
         token,
         AtomicTenant.jwt_secret,
         true,
         { algorithm: algorithm },
       )
+      raise InvalidTokenError if AtomicTenant.jwt_aud != decoded_token[0]["aud"]
+
+      decoded_token
     end
 
     def self.valid?(token, algorithm = ALGORITHM)

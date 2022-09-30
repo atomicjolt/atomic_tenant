@@ -66,12 +66,14 @@ module AtomicTenant
     end
 
     def is_admin?(request)
+      return true if request.path == "/readiness"
+
       host = request.host_with_port
       subdomain = host&.split(".")&.first
 
       return false if subdomain.nil?
 
-      subdomain == AtomicTenant.admin_subdomain 
+      subdomain == AtomicTenant.admin_subdomain
     end
 
     def encoded_token(req)

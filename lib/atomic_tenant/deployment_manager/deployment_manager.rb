@@ -50,15 +50,15 @@ module AtomicTenant
                       Rails.logger.info("Colliding strategies, Linking iss / deployment id: #{iss} / #{deployment_id} to application instance: #{to_link.application_instance_id}, all results: #{results}")
 
                     else
-                      raise Exceptions::UnableToLinkDeploymentError
+                      raise AtomicTenant::Exceptions::UnableToLinkDeploymentError
                     end
 
           Rails.logger.info("Linking iss / deployment id: #{iss} / #{deployment_id} to application instance: #{to_link.application_instance_id}")
 
-          associate_deployment(iss: iss, deployment_id: deployment_id,application_instance_id: to_link.application_instance_id) 
+          associate_deployment(iss: iss, deployment_id: deployment_id,application_instance_id: to_link.application_instance_id)
         end
 
-        private 
+        private
 
         def associate_deployment(iss:, deployment_id:, application_instance_id:)
           AtomicTenant::LtiDeployment.create!(

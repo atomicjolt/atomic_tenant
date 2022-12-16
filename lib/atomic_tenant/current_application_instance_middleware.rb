@@ -1,4 +1,5 @@
 require_relative 'jwt_token'
+require_relative 'exceptions'
 module AtomicTenant
   class CurrentApplicationInstanceMiddleware
     include JwtToken
@@ -38,7 +39,7 @@ module AtomicTenant
         elsif is_admin?(request)
           admin_app_key = AtomicTenant.admin_subdomain
           admin_app = Application.find_by(key: admin_app_key)
-          
+
           raise Exceptions::NoAdminApp if admin_app.nil?
           app_instances = admin_app.application_instances
 

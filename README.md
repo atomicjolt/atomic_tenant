@@ -23,14 +23,16 @@ Then install the migrations:
 
 ## Usage
 Create a new initializer:
-  `config/initializers/atomic_tenant.rb`
+```
+  config/initializers/atomic_tenant.rb
+```
 
 With the following content:
-  `
+```
   AtomicTenant.jwt_secret = Rails.application.secrets.auth0_client_secret
   AtomicTenant.jwt_aud = Rails.application.secrets.auth0_client_id
   AtomicTenant.admin_subdomain = "admin".freeze
-  `
+```
 
 ## License
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).

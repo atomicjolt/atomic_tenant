@@ -23,5 +23,6 @@ Gem::Specification.new do |spec|
   end
 
   # spec.add_dependency 'rails', '>= 7.0.2.2'
-  spec.add_dependency "rails", "~> 7.0.3"
+  spec.add_dependency 'rails', '~> 7.0.3'
+  spec.add_dependency 'atomic_lti', '~> 1.3.0'
 end

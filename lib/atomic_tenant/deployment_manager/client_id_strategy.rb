@@ -8,7 +8,7 @@ module AtomicTenant
         end
 
         def call(decoded_id_token:)
-          client_id = decoded_id_token["aud"]
+          client_id = AtomicLti::Lti.client_id(decoded_id_token)
           iss = decoded_id_token["iss"]
 
           if (pinned = AtomicTenant::PinnedClientId.find_by(iss: iss, client_id: client_id))

@@ -36,6 +36,8 @@ module AtomicTenant
             deployment = deployment_manager.link_deployment_id(decoded_id_token: decoded_token)
              env['atomic.validated.application_instance_id'] = deployment.application_instance_id
           end
+        elsif env.dig("oauth_state", "application_instance_id").present?
+          env['atomic.validated.application_instance_id'] = env["oauth_state"]["application_instance_id"]
         elsif is_admin?(request)
           admin_app_key = AtomicTenant.admin_subdomain
           admin_app = Application.find_by(key: admin_app_key)

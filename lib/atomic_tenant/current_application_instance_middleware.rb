@@ -82,7 +82,7 @@ module AtomicTenant
     end
 
     def encoded_token(req)
-      return req.params[:jwt] if req.params[:jwt]
+      return req.params['jwt'] if req.params['jwt']
 
       # TODO: verify HTTP_AUTORIZAITON is the same as "Authorization"
       if header = req.get_header('HTTP_AUTHORIZATION') # || req.headers[:authorization]

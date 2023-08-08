@@ -11,7 +11,7 @@ module AtomicTenant
     def self.decode(token,  algorithm = ALGORITHM)
       unverified = JWT.decode(token, nil, false)
       kid = unverified[HEADER]["kid"]
-      app_instance = ApplicationInstance.find_by(lti_key: kid)
+      app_instance = ApplicationInstance.find_by!(lti_key: kid)
       decoded_token = JWT.decode(
         token,
         app_instance.lti_secret,

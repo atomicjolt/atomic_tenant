@@ -1,4 +1,5 @@
 require_relative 'jwt_token'
+require_relative 'canvas_content_migration'
 require_relative 'exceptions'
 module AtomicTenant
   class CurrentApplicationInstanceMiddleware
@@ -51,6 +52,9 @@ module AtomicTenant
           if instance = app_instances.first
             env['atomic.validated.application_instance_id'] = instance.id
           end
+        elsif canvas_migration_hook?(request)
+          _token, app_instance = AtomicTenant::CanvasContentMigration.decode(encoded_token(request))
+          env['atomic.validated.application_instance_id'] = app_instance.id
         elsif encoded_token(request).present?
           token = encoded_token(request)
           # TODO: decoded token should be put on request
@@ -79,6 +83,10 @@ module AtomicTenant
       return false if subdomain.nil?
 
       subdomain == AtomicTenant.admin_subdomain
+    end
+
+    def canvas_migration_hook?(request)
+      return true if request.path.match?(%r{^/api/ims_(import|export)})
     end
 
     def encoded_token(req)

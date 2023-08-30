@@ -4,7 +4,7 @@ module AtomicTenant
 
     ALGORITHM = "HS512".freeze
 
-    def self.decode(token,  algorithm: ALGORITHM, validate: true)
+    def self.decode(token,  algorithm = ALGORITHM, validate: true)
       decoded_token = JWT.decode(
         token,
         AtomicTenant.jwt_secret,

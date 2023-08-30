@@ -57,14 +57,15 @@ module AtomicTenant
           env['atomic.validated.application_instance_id'] = app_instance.id
         elsif encoded_token(request).present?
           token = encoded_token(request)
-          # TODO: decoded token should be put on request
-          decoded_token = AtomicTenant::JwtToken.decode(token)
+          # We don't validate the token here because this step is only designed to set
+          # the tenant for the request. If the token is invalid or expired the app must
+          # return 401 or take other action.
+          decoded_token = AtomicTenant::JwtToken.decode(token, validate: false)
           if decoded_token.present? && decoded_token.first.present?
             if app_instance_id = decoded_token.first['application_instance_id']
               env['atomic.validated.application_instance_id'] = app_instance_id
             end
           end
-
         end
 
       rescue StandardError => e

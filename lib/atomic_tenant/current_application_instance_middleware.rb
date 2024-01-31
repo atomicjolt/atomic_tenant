@@ -53,7 +53,7 @@ module AtomicTenant
             env['atomic.validated.application_instance_id'] = instance.id
           end
         elsif canvas_migration_hook?(request)
-          _token, app_instance = AtomicTenant::CanvasContentMigration.decode(encoded_token(request))
+          app_instance = AtomicTenant::CanvasContentMigration.decode(encoded_token(request))
           env['atomic.validated.application_instance_id'] = app_instance.id
         elsif encoded_token(request).present?
           token = encoded_token(request)

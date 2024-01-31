@@ -12,13 +12,9 @@ module AtomicTenant
       unverified = JWT.decode(token, nil, false)
       kid = unverified[HEADER]["kid"]
       app_instance = ApplicationInstance.find_by!(lti_key: kid)
-      decoded_token = JWT.decode(
-        token,
-        app_instance.lti_secret,
-        true,
-        { algorithm: algorithm },
-      )
-      [decoded_token, app_instance]
+      # Don't validate because we're only setting the tenant for the request. The app
+      # must validate the JWT.
+      [nil, app_instance]
     end
   end
 end

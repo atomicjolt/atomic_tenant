@@ -5,6 +5,8 @@ require 'atomic_tenant/deployment_manager/client_id_strategy'
 require 'atomic_tenant/deployment_manager/deployment_manager_strategy'
 require 'atomic_tenant/engine'
 require 'atomic_tenant/current_application_instance_middleware'
+require 'atomic_tenant/enforce_tenanting'
+require 'atomic_tenant/row_level_security'
 
 module AtomicTenant
   mattr_accessor :custom_strategies

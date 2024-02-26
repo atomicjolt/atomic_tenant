@@ -7,5 +7,7 @@ module AtomicTenant
 
     class NonUniqueAdminApp < StandardError; end
     class NoAdminApp < StandardError; end
+    class InvalidTenantKeyError < StandardError; end
+    class TenantNotFoundError < StandardError; end
   end
 end

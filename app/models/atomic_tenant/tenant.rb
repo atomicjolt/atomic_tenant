@@ -5,10 +5,6 @@ module AtomicTenant
     SET_TENANT_ID_SQL = 'SET rls.tenant_id = %s'.freeze
     RESET_TENANT_ID_SQL = 'RESET rls.tenant_id'.freeze
 
-    def promise(association_name)
-      AssociationLoader.for(self.class, association_name).load(self)
-    end
-    
     def self.switch!(tenant)
       connection.clear_query_cache
       Thread.current[:tenant] = tenant

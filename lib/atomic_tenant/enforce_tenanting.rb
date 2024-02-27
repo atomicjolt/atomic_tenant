@@ -56,7 +56,10 @@ module AtomicTenant::EnforceTenanting
     
     def set_tenant_id
       if self.class.is_tenanted?
-        self.tenant_id = Thread.current[:tenant_id]
+        tenant = AtomicTenant::Tenant.current
+        raise AtomicTenant::Exceptions::TenantNotSet unless tenant.present?
+
+        self.tenant_id = tenant.id
       end
     end
   end

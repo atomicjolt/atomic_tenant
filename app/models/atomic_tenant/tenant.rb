@@ -5,11 +5,15 @@ module AtomicTenant
     SET_TENANT_ID_SQL = 'SET rls.tenant_id = %s'.freeze
     RESET_TENANT_ID_SQL = 'RESET rls.tenant_id'.freeze
 
-    def self.switch!(tenant)
-      connection.clear_query_cache
-      Thread.current[:tenant] = tenant
+    def self.switch!(tenant = nil)
+      if tenant
+        connection.clear_query_cache
+        Thread.current[:tenant] = tenant
 
-      ActiveRecord::Base.connection.exec_query(SET_TENANT_ID_SQL % connection.quote(tenant.id), "SQL")
+        ActiveRecord::Base.connection.exec_query(SET_TENANT_ID_SQL % connection.quote(tenant.id), "SQL")
+      else 
+        reset!
+      end
     end
     
     def self.reset!
@@ -20,13 +24,8 @@ module AtomicTenant
     
     def self.switch_tenant_legacy!(oauth_consumer_key = nil)
       if oauth_consumer_key
-        tenant_id = ApplicationInstance.find_by(lti_key: oauth_consumer_key)&.tenant_id
-        
-        if (!tenant_id)
-          raise AtomicTenant::Exceptions::InvalidTenantKeyError, oauth_consumer_key
-        end
-
-        tenant = Tenant.find(tenant_id)
+        tenant = ApplicationInstance.find_by(lti_key: oauth_consumer_key)&.tenant
+        raise AtomicTenant::Exceptions::InvalidTenantKeyError, oauth_consumer_key unless tenant.present?
 
         switch!(tenant)
       else

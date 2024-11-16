@@ -36,7 +36,7 @@ module AtomicTenant::TenantSwitching
       end
     end
 
-    def self.current_tenant_key
+    def self.current_key
       Thread.current[:tenant]&.key || "public"
     end
 

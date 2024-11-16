@@ -1,54 +1,57 @@
-module AtomicTenant
-  class Tenant < ActiveRecord::Base
-    has_many :application_instances
 
-    SET_TENANT_ID_SQL = 'SET rls.tenant_id = %s'.freeze
-    RESET_TENANT_ID_SQL = 'RESET rls.tenant_id'.freeze
+module AtomicTenant::TenantSwitching
+  extend ActiveSupport::Concern
+
+  included do
+    validates :key, presence: true, uniqueness: true
 
     def self.switch!(tenant = nil)
       if tenant
         connection.clear_query_cache
         Thread.current[:tenant] = tenant
 
-        ActiveRecord::Base.connection.exec_query(SET_TENANT_ID_SQL % connection.quote(tenant.id), "SQL")
-      else 
+        query = "SET rls.#{AtomicTenant.tenanted_by} = %s"
+        ActiveRecord::Base.connection.exec_query(query % connection.quote(tenant.id), "SQL")
+      else
         reset!
       end
     end
-    
+
     def self.reset!
       connection.clear_query_cache
       Thread.current[:tenant] = nil
-      ActiveRecord::Base.connection.exec_query(RESET_TENANT_ID_SQL, "SQL")
+
+      query = "RESET rls.#{AtomicTenant.tenanted_by}"
+      ActiveRecord::Base.connection.exec_query(query, "SQL")
     end
-    
-    def self.switch_tenant_legacy!(oauth_consumer_key = nil)
-      if oauth_consumer_key
-        tenant = ApplicationInstance.find_by(lti_key: oauth_consumer_key)&.tenant
-        raise AtomicTenant::Exceptions::InvalidTenantKeyError, oauth_consumer_key unless tenant.present?
+
+    def self.switch_tenant_legacy!(tenant_key = nil)
+      if tenant_key
+        tenant = AtomicTenant.tenant_model.find_by(key: tenant_key)
+        raise AtomicTenant::Exceptions::InvalidTenantKeyError, tenant_key unless tenant.present?
 
         switch!(tenant)
       else
         reset!
       end
     end
-    
+
     def self.current_tenant_key
       Thread.current[:tenant]&.key || "public"
     end
-    
+
     def self.current
       Thread.current[:tenant]
     end
-    
+
     def self.switch_tenant_legacy(tenant_key, &block)
-      tenant = Tenant.find_by(key: tenant_key)
+      tenant = AtomicTenant.tenant_model.find_by(key: tenant_key)
       switch(tenant, &block)
     end
 
     def self.switch(tenant, &block)
       previous_tenant = Thread.current[:tenant]
-      
+
       begin
         switch!(tenant)
         block.call

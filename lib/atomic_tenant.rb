@@ -8,6 +8,7 @@ require 'atomic_tenant/current_application_instance_middleware'
 require 'atomic_tenant/tenant_switching'
 require 'atomic_tenant/row_level_security'
 require 'atomic_tenant/tenantable'
+require 'atomic_tenant/active_job'
 
 module AtomicTenant
   mattr_accessor :custom_strategies

@@ -23,5 +23,6 @@ Gem::Specification.new do |spec|
   end
 
   spec.add_dependency 'atomic_lti', '>= 1.3', '< 4'
-  spec.add_dependency "rails", ">= 7.0", "< 9"
+  spec.add_dependency 'rails', '>= 7.0', '< 9'
+  spec.add_development_dependency 'rspec', '~> 2.0'
 end

@@ -1,0 +1,2 @@
+class BadRowSecurityExample < ApplicationRecord
+end

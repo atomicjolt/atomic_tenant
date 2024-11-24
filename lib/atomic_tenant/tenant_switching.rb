@@ -1,4 +1,3 @@
-
 module AtomicTenant::TenantSwitching
   extend ActiveSupport::Concern
 
@@ -11,7 +10,7 @@ module AtomicTenant::TenantSwitching
         Thread.current[:tenant] = tenant
 
         query = "SET rls.#{AtomicTenant.tenanted_by} = %s"
-        ActiveRecord::Base.connection.exec_query(query % connection.quote(tenant.id), "SQL")
+        ActiveRecord::Base.connection.exec_query(query % connection.quote(tenant.id), 'SQL')
       else
         reset!
       end
@@ -22,14 +21,12 @@ module AtomicTenant::TenantSwitching
       Thread.current[:tenant] = nil
 
       query = "RESET rls.#{AtomicTenant.tenanted_by}"
-      ActiveRecord::Base.connection.exec_query(query, "SQL")
+      ActiveRecord::Base.connection.exec_query(query, 'SQL')
     end
 
     def self.switch_tenant_legacy!(tenant_key = nil)
       if tenant_key
-        tenant = AtomicTenant.tenant_model.find_by(key: tenant_key)
-        raise AtomicTenant::Exceptions::InvalidTenantKeyError, tenant_key unless tenant.present?
-
+        tenant = tenant_from_key!(tenant_key)
         switch!(tenant)
       else
         reset!
@@ -37,7 +34,7 @@ module AtomicTenant::TenantSwitching
     end
 
     def self.current_key
-      Thread.current[:tenant]&.key || "public"
+      Thread.current[:tenant]&.key || 'public'
     end
 
     def self.current
@@ -45,8 +42,15 @@ module AtomicTenant::TenantSwitching
     end
 
     def self.switch_tenant_legacy(tenant_key, &block)
-      tenant = AtomicTenant.tenant_model.find_by(key: tenant_key)
+      tenant = tenant_from_key!(tenant_key)
       switch(tenant, &block)
+    end
+
+    def self.tenant_from_key!(tenant_key)
+      tenant = AtomicTenant.tenant_model.find_by(key: tenant_key)
+      raise AtomicTenant::Exceptions::InvalidTenantKeyError, tenant_key unless tenant.present?
+
+      tenant
     end
 
     def self.switch(tenant, &block)

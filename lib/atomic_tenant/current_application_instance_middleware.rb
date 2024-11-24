@@ -35,15 +35,16 @@ module AtomicTenant
             env['atomic.validated.application_instance_id'] = deployment.application_instance_id
           else
             deployment = deployment_manager.link_deployment_id(decoded_id_token: decoded_token)
-             env['atomic.validated.application_instance_id'] = deployment.application_instance_id
+            env['atomic.validated.application_instance_id'] = deployment.application_instance_id
           end
-        elsif env.dig("oauth_state", "application_instance_id").present?
-          env['atomic.validated.application_instance_id'] = env["oauth_state"]["application_instance_id"]
+        elsif env.dig('oauth_state', 'application_instance_id').present?
+          env['atomic.validated.application_instance_id'] = env['oauth_state']['application_instance_id']
         elsif is_admin?(request)
           admin_app_key = AtomicTenant.admin_subdomain
           admin_app = Application.find_by(key: admin_app_key)
 
           raise Exceptions::NoAdminApp if admin_app.nil?
+
           app_instances = admin_app.application_instances
 
           raise Exceptions::NonUniqueAdminApp if app_instances.count > 1
@@ -61,13 +62,10 @@ module AtomicTenant
           # the tenant for the request. If the token is invalid or expired the app must
           # return 401 or take other action.
           decoded_token = AtomicTenant::JwtToken.decode(token, validate: false)
-          if decoded_token.present? && decoded_token.first.present?
-            if app_instance_id = decoded_token.first['application_instance_id']
-              env['atomic.validated.application_instance_id'] = app_instance_id
-            end
+          if decoded_token.present? && decoded_token.first.present? && app_instance_id = decoded_token.first['application_instance_id']
+            env['atomic.validated.application_instance_id'] = app_instance_id
           end
         end
-
       rescue StandardError => e
         Rails.logger.error("Error in current app instance middleware: #{e}, #{e.backtrace}")
       end
@@ -76,10 +74,10 @@ module AtomicTenant
     end
 
     def is_admin?(request)
-      return true if request.path == "/readiness"
+      return true if request.path == '/readiness'
 
       host = request.host_with_port
-      subdomain = host&.split(".")&.first
+      subdomain = host&.split('.')&.first
 
       return false if subdomain.nil?
 
@@ -87,16 +85,16 @@ module AtomicTenant
     end
 
     def canvas_migration_hook?(request)
-      return true if request.path.match?(%r{^/api/ims_(import|export)})
+      true if request.path.match?(%r{^/api/ims_(import|export)})
     end
 
     def encoded_token(req)
       return req.params['jwt'] if req.params['jwt']
 
       # TODO: verify HTTP_AUTORIZAITON is the same as "Authorization"
-      if header = req.get_header('HTTP_AUTHORIZATION') # || req.headers[:authorization]
-        header.split(' ').last
-      end
+      return unless header = req.get_header('HTTP_AUTHORIZATION') # || req.headers[:authorization]
+
+      header.split(' ').last
     end
   end
 end

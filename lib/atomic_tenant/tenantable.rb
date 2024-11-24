@@ -26,19 +26,19 @@ module AtomicTenant::Tenantable
 
       result = ActiveRecord::Base.connection.exec_query(
         query,
-        "SQL",
+        'SQL',
         [
           ActiveRecord::Relation::QueryAttribute.new(
-            "relname",
+            'relname',
             model.table_name,
             ActiveRecord::Type::String.new
           )
-        ],
+        ]
       )
 
-      if !result.first['relrowsecurity']
-        raise "Model #{model.name} is not public but does not have row level security. Did you forget to add row level security in your migration?"
-      end
+      return if result.first['relrowsecurity']
+
+      raise "Model #{model.name} is not public but does not have row level security. Did you forget to add row level security in your migration?"
     end
   end
 
@@ -52,32 +52,31 @@ module AtomicTenant::Tenantable
     def self.inherited(subclass)
       super
 
-      if subclass <= ActiveRecord::Base && !subclass.abstract_class?
-        AtomicTenant::Tenantable.register_private_tenanted_model(subclass)
-      end
-    end
+      return unless subclass <= ActiveRecord::Base && !subclass.abstract_class?
 
+      AtomicTenant::Tenantable.register_private_tenanted_model(subclass)
+    end
 
     private
 
     def set_tenant_id
-      if self.class.is_tenanted?
-        tenant = AtomicTenant.tenant_model.current
-        raise AtomicTenant::Exceptions::TenantNotSet unless tenant.present?
+      return unless self.class.is_tenanted?
 
-        self[AtomicTenant.tenanted_by] = tenant.id
-      end
+      tenant = AtomicTenant.tenant_model.current
+      raise AtomicTenant::Exceptions::TenantNotSet unless tenant.present?
+
+      self[AtomicTenant.tenanted_by] = tenant.id
     end
 
     def in_current_tenant
-      if self.class.is_tenanted?
-        tenant = AtomicTenant.tenant_model.current
-        raise AtomicTenant::Exceptions::TenantNotSet unless tenant.present?
+      return unless self.class.is_tenanted?
 
-        if self[AtomicTenant.tenanted_by] != tenant.id
-          errors.add(AtomicTenant.tenanted_by, "must be set to the current tenant's id")
-        end
-      end
+      tenant = AtomicTenant.tenant_model.current
+      raise AtomicTenant::Exceptions::TenantNotSet unless tenant.present?
+
+      return unless self[AtomicTenant.tenanted_by] != tenant.id
+
+      errors.add(AtomicTenant.tenanted_by, "must be set to the current tenant's id")
     end
   end
 

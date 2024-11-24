@@ -81,6 +81,8 @@ module AtomicTenant::Tenantable
   end
 
   class_methods do
+    private
+
     def set_public_tenanted
       AtomicTenant::Tenantable.register_public_tenanted_model(self)
       self.is_tenanted = false

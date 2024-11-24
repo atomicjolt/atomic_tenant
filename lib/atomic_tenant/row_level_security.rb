@@ -3,8 +3,8 @@ module AtomicTenant::RowLevelSecurity
     app_username = ActiveRecord::Base.connection.quote_column_name(AtomicTenant.db_tenant_restricted_user)
     safe_table_name = ActiveRecord::Base.connection.quote_table_name(table_name)
     policy_name = ActiveRecord::Base.connection.quote_table_name("#{table_name}_tenanted_user")
+    rls_setting_name = ActiveRecord::Base.connection.quote("rls.#{AtomicTenant.tenanted_by}")
     tenanted_by = ActiveRecord::Base.connection.quote_column_name(AtomicTenant.tenanted_by)
-    rls_setting_name = ActiveRecord::Base.connection.quote("rls.#{tenanted_by}")
 
     ActiveRecord::Base.connection.execute("ALTER TABLE #{safe_table_name} ENABLE ROW LEVEL SECURITY")
     ActiveRecord::Base.connection.execute <<~SQL

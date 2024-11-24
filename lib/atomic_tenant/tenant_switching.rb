@@ -9,7 +9,8 @@ module AtomicTenant::TenantSwitching
         connection.clear_query_cache
         Thread.current[:tenant] = tenant
 
-        query = "SET rls.#{AtomicTenant.tenanted_by} = %s"
+        variable = ActiveRecord::Base.connection.quote_column_name("rls.#{AtomicTenant.tenanted_by}")
+        query = "SET #{variable} = %s"
         ActiveRecord::Base.connection.exec_query(query % connection.quote(tenant.id), 'SQL')
       else
         reset!
@@ -20,7 +21,8 @@ module AtomicTenant::TenantSwitching
       connection.clear_query_cache
       Thread.current[:tenant] = nil
 
-      query = "RESET rls.#{AtomicTenant.tenanted_by}"
+      variable = ActiveRecord::Base.connection.quote_column_name("rls.#{AtomicTenant.tenanted_by}")
+      query = "RESET #{variable}"
       ActiveRecord::Base.connection.exec_query(query, 'SQL')
     end
 

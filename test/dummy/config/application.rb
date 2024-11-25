@@ -14,6 +14,11 @@ module Dummy
     # For compatibility with applications that use this config
     config.action_controller.include_all_helpers = false
 
+    # Dump schema in SQL format to preserve RLS policies
+    ActiveRecord::Tasks::DatabaseTasks.structure_dump_flags = ['--clean', '--if-exists']
+    config.active_record.schema_format = :sql
+    config.active_record.dump_schemas = 'public'
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

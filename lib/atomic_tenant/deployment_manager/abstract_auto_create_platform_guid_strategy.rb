@@ -52,6 +52,10 @@ module AtomicTenant
 
       private
 
+      def find_existing(current_application, site_url, issuer, platform_guid)
+        raise NotImplementedError, "Subclasses must implement #find_existing"
+      end
+
       def create_new_instance(app, site_url, issuer, platform_guid)
         raise NotImplementedError, "Subclasses must implement #create_new_instance"
       end
@@ -63,24 +67,6 @@ module AtomicTenant
           # If we get a RecordNotUnique error, it means another process created the instance concurrently.
           find_existing(app, site_url, issuer, platform_guid)
         end
-      end
-
-      def find_existing(current_application, site_url, issuer, platform_guid)
-        # This won't work if they uninstall in a vanity/non-vanity domain and then
-        # reinstall in the other. But that is probably a rare case and we can deal
-        # with it manually in the admin interface if needed.
-        site_key = URI.parse(site_url).hostname
-        site_key = site_key.
-          gsub(".instructure.com", "").
-          gsub(/[^\w]+/, "_") # Replace non alphanumeric characters with _
-
-        old_tenant = "#{site_key}-#{current_application.key}"
-        app_instance = ApplicationInstance.find_by(tenant: old_tenant, application: current_application)
-
-        tenant = tenant_name(issuer, platform_guid, current_application.key)
-        app_instance ||= ApplicationInstance.find_by(tenant:, application: current_application)
-
-        return app_instance
       end
 
       # Pin platform guid, handling concurrent launches both trying to pin the same
@@ -101,18 +87,6 @@ module AtomicTenant
             application_instance_id:,
           )
         end
-      end
-
-      def tenant_uuid(issuer, platform_guid)
-        Digest::UUID.uuid_v5(AtomicTenant.tenant_uuid_namespace, "#{issuer}|#{platform_guid}")
-      end
-
-      # For new tenants use UUIDv5 based on iss+platform_guid. This is more reliable
-      # than the site url which can change if they switch from vanity to non-vanity
-      # domain or vice versa. We use a UUID because iss+platform_guid can be long and
-      # postgres truncates schema names over 63 characters.
-      def tenant_name(issuer, platform_guid, application_key)
-        "#{tenant_uuid(issuer, platform_guid)}-#{application_key}"
       end
 
       def extract_site_url(decoded_id_token)

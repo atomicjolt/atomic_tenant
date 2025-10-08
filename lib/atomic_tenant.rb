@@ -16,7 +16,6 @@ module AtomicTenant
   mattr_accessor :custom_fallback_strategies
 
   mattr_accessor :untrusted_iss_tenant_limit, default: 100
-  mattr_accessor :tenant_uuid_namespace
 
   mattr_accessor :jwt_secret
   mattr_accessor :jwt_aud

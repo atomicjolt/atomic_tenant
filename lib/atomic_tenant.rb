@@ -12,6 +12,7 @@ require 'atomic_tenant/active_job'
 
 module AtomicTenant
   mattr_accessor :custom_strategies
+  mattr_accessor :custom_fallback_strategies
 
   mattr_accessor :jwt_secret
   mattr_accessor :jwt_aud

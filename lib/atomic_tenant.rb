@@ -3,6 +3,7 @@ require 'atomic_tenant/deployment_manager/deployment_manager'
 require 'atomic_tenant/deployment_manager/platform_guid_strategy'
 require 'atomic_tenant/deployment_manager/client_id_strategy'
 require 'atomic_tenant/deployment_manager/deployment_manager_strategy'
+require 'atomic_tenant/deployment_manager/abstract_auto_create_platform_guid_strategy'
 require 'atomic_tenant/engine'
 require 'atomic_tenant/current_application_instance_middleware'
 require 'atomic_tenant/tenant_switching'
@@ -13,6 +14,9 @@ require 'atomic_tenant/active_job'
 module AtomicTenant
   mattr_accessor :custom_strategies
   mattr_accessor :custom_fallback_strategies
+
+  mattr_accessor :untrusted_iss_tenant_limit, default: 100
+  mattr_accessor :tenant_uuid_namespace
 
   mattr_accessor :jwt_secret
   mattr_accessor :jwt_aud

@@ -10,5 +10,6 @@ module AtomicTenant
     class InvalidTenantKeyError < StandardError; end
     class TenantNotFoundError < StandardError; end
     class TenantNotSet < StandardError; end
+    class OnboardingException < StandardError; end
   end
 end

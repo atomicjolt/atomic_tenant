@@ -8,7 +8,7 @@ class TestAutoCreateStrategy < AtomicTenant::DeploymentManager::AbstractAutoCrea
 
   private
 
-  def create_new_instance(app, site_url, issuer, platform_guid)
+  def create_application_instance(app, site_url, issuer, platform_guid)
     # Simple test implementation that creates an ApplicationInstance
     # In a real implementation, this would also create the tenant/schema
     ApplicationInstance.create!(
@@ -17,9 +17,9 @@ class TestAutoCreateStrategy < AtomicTenant::DeploymentManager::AbstractAutoCrea
     )
   end
 
-  # Implement find_existing to work with the dummy app structure
+  # Implement find_application_instance to work with the dummy app structure
   # In real apps, this would query by tenant field/relationship
-  def find_existing_instance(current_application, site_url, issuer, platform_guid)
+  def find_application_instance(current_application, site_url, issuer, platform_guid)
     ApplicationInstance.find_by(
       application: current_application,
       lti_key: "test-lti-key-#{site_url}"
@@ -216,14 +216,14 @@ RSpec.describe AtomicTenant::DeploymentManager::AbstractAutoCreatePlatformGuidSt
         )
       end
 
-      it "calls create_new_instance with correct site_url from canvas_api_domain" do
+      it "calls create_application_instance with correct site_url from canvas_api_domain" do
         mock_app_instance = create(:application_instance, application: application)
 
-        expect(strategy).to receive(:find_existing_instance)
+        expect(strategy).to receive(:find_application_instance)
           .with(application, "https://custom.canvas.com", "https://canvas.instructure.com", "canvas-guid-123")
           .and_return(nil)
 
-        expect(strategy).to receive(:create_new_instance)
+        expect(strategy).to receive(:create_application_instance)
           .with(application, "https://custom.canvas.com", "https://canvas.instructure.com", "canvas-guid-123")
           .and_return(mock_app_instance)
 
@@ -231,10 +231,10 @@ RSpec.describe AtomicTenant::DeploymentManager::AbstractAutoCreatePlatformGuidSt
         expect(result.application_instance_id).to eq(mock_app_instance.id)
       end
 
-      it "calls find_existing with correct site_url from canvas_api_domain" do
+      it "calls find_application_instance with correct site_url from canvas_api_domain" do
         mock_app_instance = create(:application_instance, application: application)
 
-        expect(strategy).to receive(:find_existing_instance)
+        expect(strategy).to receive(:find_application_instance)
           .with(application, "https://custom.canvas.com", "https://canvas.instructure.com", "canvas-guid-123")
           .and_return(mock_app_instance)
 
@@ -263,14 +263,14 @@ RSpec.describe AtomicTenant::DeploymentManager::AbstractAutoCreatePlatformGuidSt
         )
       end
 
-      it "calls create_new_instance with correct site_url from platform url" do
+      it "calls create_application_instance with correct site_url from platform url" do
         mock_app_instance = create(:application_instance, application: application)
 
-        expect(strategy).to receive(:find_existing_instance)
+        expect(strategy).to receive(:find_application_instance)
           .with(application, "https://blackboard.example.com", "https://blackboard.com", "bb-guid-456")
           .and_return(nil)
 
-        expect(strategy).to receive(:create_new_instance)
+        expect(strategy).to receive(:create_application_instance)
           .with(application, "https://blackboard.example.com", "https://blackboard.com", "bb-guid-456")
           .and_return(mock_app_instance)
 
@@ -278,10 +278,10 @@ RSpec.describe AtomicTenant::DeploymentManager::AbstractAutoCreatePlatformGuidSt
         expect(result.application_instance_id).to eq(mock_app_instance.id)
       end
 
-      it "calls find_existing with correct site_url from platform url" do
+      it "calls find_application_instance with correct site_url from platform url" do
         mock_app_instance = create(:application_instance, application: application)
 
-        expect(strategy).to receive(:find_existing_instance)
+        expect(strategy).to receive(:find_application_instance)
           .with(application, "https://blackboard.example.com", "https://blackboard.com", "bb-guid-456")
           .and_return(mock_app_instance)
 
@@ -311,14 +311,14 @@ RSpec.describe AtomicTenant::DeploymentManager::AbstractAutoCreatePlatformGuidSt
         )
       end
 
-      it "calls create_new_instance with correct site_url from issuer" do
+      it "calls create_application_instance with correct site_url from issuer" do
         mock_app_instance = create(:application_instance, application: application)
 
-        expect(strategy).to receive(:find_existing_instance)
+        expect(strategy).to receive(:find_application_instance)
           .with(application, "https://atomicjolt.brightspace.com", "https://atomicjolt.brightspace.com", "d2l-guid-789")
           .and_return(nil)
 
-        expect(strategy).to receive(:create_new_instance)
+        expect(strategy).to receive(:create_application_instance)
           .with(application, "https://atomicjolt.brightspace.com", "https://atomicjolt.brightspace.com", "d2l-guid-789")
           .and_return(mock_app_instance)
 
@@ -326,10 +326,10 @@ RSpec.describe AtomicTenant::DeploymentManager::AbstractAutoCreatePlatformGuidSt
         expect(result.application_instance_id).to eq(mock_app_instance.id)
       end
 
-      it "calls find_existing with correct site_url from issuer" do
+      it "calls find_application_instance with correct site_url from issuer" do
         mock_app_instance = create(:application_instance, application: application)
 
-        expect(strategy).to receive(:find_existing_instance)
+        expect(strategy).to receive(:find_application_instance)
           .with(application, "https://atomicjolt.brightspace.com", "https://atomicjolt.brightspace.com", "d2l-guid-789")
           .and_return(mock_app_instance)
 
@@ -384,14 +384,14 @@ RSpec.describe AtomicTenant::DeploymentManager::AbstractAutoCreatePlatformGuidSt
     let(:decoded_token) { base_decoded_token }
 
     context "when RecordNotUnique is raised during creation" do
-      it "calls find_existing twice when creation fails" do
+      it "calls find_application_instance twice when creation fails" do
         mock_app_instance = create(:application_instance, application: application)
 
-        # Simulate concurrent creation by making create_new_instance raise RecordNotUnique
-        allow_any_instance_of(TestAutoCreateStrategy).to receive(:create_new_instance).and_raise(ActiveRecord::RecordNotUnique)
+        # Simulate concurrent creation by making create_application_instance raise RecordNotUnique
+        allow_any_instance_of(TestAutoCreateStrategy).to receive(:create_application_instance).and_raise(ActiveRecord::RecordNotUnique)
 
-        # Expect find_existing to be called twice - first returns nil, second returns the instance
-        expect_any_instance_of(TestAutoCreateStrategy).to receive(:find_existing_instance)
+        # Expect find_application_instance to be called twice - first returns nil, second returns the instance
+        expect_any_instance_of(TestAutoCreateStrategy).to receive(:find_application_instance)
           .and_return(nil, mock_app_instance)
 
         strategy.call(decoded_id_token: decoded_token)

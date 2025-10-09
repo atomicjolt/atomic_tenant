@@ -44,28 +44,28 @@ module AtomicTenant
 
         site_url = extract_site_url(decoded_id_token)
 
-        app_inst = find_existing_instance(app, site_url, issuer, platform_guid)
-        app_inst ||= maybe_create_new_instance(app, site_url, issuer, platform_guid)
+        app_inst = find_application_instance(app, site_url, issuer, platform_guid)
+        app_inst ||= maybe_create_application_instance(app, site_url, issuer, platform_guid)
         pin = pin_platform_guid(issuer, platform_guid, app.id, app_inst.id)
         AtomicTenant::DeploymentManager::DeploymentStrategyResult.new(application_instance_id: pin.application_instance_id)
       end
 
       private
 
-      def find_existing_instance(current_application, site_url, issuer, platform_guid)
-        raise NotImplementedError, "Subclasses must implement #find_existing_instance"
+      def find_application_instance(current_application, site_url, issuer, platform_guid)
+        raise NotImplementedError, "Subclasses must implement #find_application_instance"
       end
 
-      def create_new_instance(app, site_url, issuer, platform_guid)
-        raise NotImplementedError, "Subclasses must implement #create_new_instance"
+      def create_application_instance(app, site_url, issuer, platform_guid)
+        raise NotImplementedError, "Subclasses must implement #create_application_instance"
       end
 
-      def maybe_create_new_instance(app, site_url, issuer, platform_guid)
+      def maybe_create_application_instance(app, site_url, issuer, platform_guid)
         ActiveRecord::Base.transaction do
-          create_new_instance(app, site_url, issuer, platform_guid)
+          create_application_instance(app, site_url, issuer, platform_guid)
         rescue ActiveRecord::RecordNotUnique
           # If we get a RecordNotUnique error, it means another process created the instance concurrently.
-          find_existing_instance(app, site_url, issuer, platform_guid)
+          find_application_instance(app, site_url, issuer, platform_guid)
         end
       end
 

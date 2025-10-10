@@ -21,12 +21,18 @@ module AtomicTenant
         elsif env['atomic.validated.id_token'].present?
 
           custom_strategies = AtomicTenant.custom_strategies || []
+          custom_fallback_strategies = AtomicTenant.custom_fallback_strategies || []
           default_strategies = [
             AtomicTenant::DeploymentManager::PlatformGuidStrategy.new,
             AtomicTenant::DeploymentManager::ClientIdStrategy.new
           ]
 
-          deployment_manager = AtomicTenant::DeploymentManager::DeploymentManager.new(custom_strategies.concat(default_strategies))
+          deployment_manager = AtomicTenant::DeploymentManager::DeploymentManager.new([
+            *custom_strategies,
+            *default_strategies,
+            *custom_fallback_strategies
+          ])
+
           decoded_token = env['atomic.validated.decoded_id_token']
           iss = env['atomic.validated.decoded_id_token']['iss']
           deployment_id = env['atomic.validated.decoded_id_token'][AtomicLti::Definitions::DEPLOYMENT_ID]

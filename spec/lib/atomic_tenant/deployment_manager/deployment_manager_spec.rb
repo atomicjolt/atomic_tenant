@@ -32,7 +32,7 @@ RSpec.describe AtomicTenant::DeploymentManager::DeploymentManager do
 
       it "logs standard linking message" do
         expect(Rails.logger).to receive(:info).with(
-          "Linking iss / deployment id: #{iss} / #{deployment_id} to application instance: #{application_instance.id}"
+          "Linking iss / deployment id: #{iss} / #{deployment_id} to application instance: #{application_instance.id} using strategy: test_strategy"
         )
 
         manager.link_deployment_id(decoded_id_token: decoded_id_token)
@@ -64,21 +64,13 @@ RSpec.describe AtomicTenant::DeploymentManager::DeploymentManager do
         expect(deployment.application_instance_id).to eq(application_instance.id)
       end
 
-      it "logs colliding strategies message with to_link defined" do
-        allow(Rails.logger).to receive(:debug).and_call_original
-        allow(Rails.logger).to receive(:info).and_call_original
+      it "uses first strategy and does not evaluate second strategy" do
+        expect(strategy1).to receive(:call).and_call_original
+        expect(strategy2).not_to receive(:call)
 
-        expect(Rails.logger).to receive(:info).with(
-          a_string_including(
-            "Colliding strategies",
-            iss,
-            deployment_id,
-            "application instance: #{application_instance.id}",
-            "all results:"
-          )
-        ).and_call_original
+        deployment = manager.link_deployment_id(decoded_id_token: decoded_id_token)
 
-        manager.link_deployment_id(decoded_id_token: decoded_id_token)
+        expect(deployment.application_instance_id).to eq(application_instance.id)
       end
     end
 
@@ -145,7 +137,7 @@ RSpec.describe AtomicTenant::DeploymentManager::DeploymentManager do
       end
     end
 
-    context "debug logging" do
+    context "strategy evaluation" do
       let(:strategy1) do
         MockStrategy.new(
           name: "strategy_1",
@@ -161,15 +153,13 @@ RSpec.describe AtomicTenant::DeploymentManager::DeploymentManager do
       end
       let(:manager) { described_class.new([strategy1, strategy2]) }
 
-      it "logs debug information about all results" do
-        allow(Rails.logger).to receive(:debug).and_call_original
-        allow(Rails.logger).to receive(:info).and_call_original
+      it "stops evaluation after first match" do
+        expect(strategy1).to receive(:call).and_call_original
+        expect(strategy2).not_to receive(:call)
 
-        expect(Rails.logger).to receive(:debug).with(
-          a_string_including("Linking Results:")
-        ).and_call_original
+        deployment = manager.link_deployment_id(decoded_id_token: decoded_id_token)
 
-        manager.link_deployment_id(decoded_id_token: decoded_id_token)
+        expect(deployment.application_instance_id).to eq(application_instance.id)
       end
     end
   end

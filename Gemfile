@@ -25,7 +25,7 @@ end
 group :test do
   gem "launchy"
   gem "rspec"
-  gem "rspec-rails", "~>7.0"
+  gem "rspec-rails", "~>8.0"
 
   gem "jwt", "~>2.7.0"
   gem "json-jwt"

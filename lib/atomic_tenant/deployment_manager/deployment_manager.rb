@@ -43,17 +43,17 @@ module AtomicTenant
 
           matched = results.filter { |r| r[:result].application_instance_id.present? }
 
-          to_link = if matched.size == 1
+          to_link = if matched.size > 0
                       matched.first[:result]
-                    elsif matched.size > 1
-                      matched.first[:result]
-                      Rails.logger.info("Colliding strategies, Linking iss / deployment id: #{iss} / #{deployment_id} to application instance: #{to_link.application_instance_id}, all results: #{results}")
-
                     else
                       raise AtomicTenant::Exceptions::UnableToLinkDeploymentError
                     end
 
-          Rails.logger.info("Linking iss / deployment id: #{iss} / #{deployment_id} to application instance: #{to_link.application_instance_id}")
+          if matched.size > 1
+            Rails.logger.info("Colliding strategies, Linking iss / deployment id: #{iss} / #{deployment_id} to application instance: #{to_link.application_instance_id}, all results: #{results}")
+          else
+            Rails.logger.info("Linking iss / deployment id: #{iss} / #{deployment_id} to application instance: #{to_link.application_instance_id}")
+          end
 
           associate_deployment(iss: iss, deployment_id: deployment_id,application_instance_id: to_link.application_instance_id)
         end
